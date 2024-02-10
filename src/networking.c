@@ -64,7 +64,7 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     p101_error_reset(err);
 
     // If parsing as IPv4 or IPv6 fails, check if the address is a valid Unix domain socket
-    if(strlen(address) <= sizeof(sun.sun_path) - 1)
+    if(p101_strlen(env, address) <= sizeof(sun.sun_path) - 1)
     {
         p101_memset(env, &sun, 0, sizeof(sun));
         p101_strncpy(env, sun.sun_path, address, sizeof(sun.sun_path) - 1);
