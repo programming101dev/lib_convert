@@ -29,11 +29,17 @@ in_port_t parse_in_port_t(const struct p101_env *env, struct p101_error *err, co
 
 void convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr)
 {
-    struct sockaddr_un  unix_addr;
+    struct sockaddr_un  sun;
     struct sockaddr_in  sin;
     struct sockaddr_in6 sin6;
 
     P101_TRACE(env);
+
+    if(addr == NULL)
+    {
+        P101_ERROR_RAISE_CHECK(err);
+        goto done;
+    }
 
     // Try to parse the address as IPv4
     if(p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 0)
@@ -56,10 +62,8 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     p101_error_reset(err);
 
     // If parsing as IPv4 or IPv6 fails, check if the address is a valid Unix domain socket
-    if(strlen(address) <= sizeof(unix_addr.sun_path) - 1)
+    if(strlen(address) <= sizeof(sun.sun_path) - 1)
     {
-        struct sockaddr_un sun;
-
         memset(&sun, 0, sizeof(sun));
         strncpy(sun.sun_path, address, sizeof(sun.sun_path) - 1);
         sun.sun_family = AF_UNIX;
