@@ -204,7 +204,7 @@ if (CMAKE_C_COMPILER MATCHES ".*/clang.*")
     # Add a custom command to delete .gch files after the analysis
     add_custom_command(
         TARGET analysis POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/include/101_convert/*.gch
+        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/include/p101_convert/*.gch
         COMMENT "Removing .gch files"
     )
 

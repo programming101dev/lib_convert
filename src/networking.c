@@ -17,8 +17,8 @@
 #include "p101_convert/networking.h"
 #include "p101_convert/integer.h"
 #include <netinet/in.h>
+#include <p101_c/p101_string.h>
 #include <p101_posix/arpa/p101_inet.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -47,7 +47,7 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     if(p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 0)
     {
         addr->ss_family = AF_INET;
-        memcpy(addr, &sin, sizeof(struct sockaddr_in));
+        p101_memcpy(env, addr, &sin, sizeof(struct sockaddr_in));
         goto done;
     }
 
@@ -57,7 +57,7 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     if(p101_inet_pton(env, err, AF_INET6, address, &sin6.sin6_addr) == 0)
     {
         addr->ss_family = AF_INET6;
-        memcpy(addr, &sin6, sizeof(struct sockaddr_in6));
+        p101_memcpy(env, addr, &sin6, sizeof(struct sockaddr_in6));
         goto done;
     }
 
@@ -66,10 +66,10 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     // If parsing as IPv4 or IPv6 fails, check if the address is a valid Unix domain socket
     if(strlen(address) <= sizeof(sun.sun_path) - 1)
     {
-        memset(&sun, 0, sizeof(sun));
-        strncpy(sun.sun_path, address, sizeof(sun.sun_path) - 1);
+        p101_memset(env, &sun, 0, sizeof(sun));
+        p101_strncpy(env, sun.sun_path, address, sizeof(sun.sun_path) - 1);
         sun.sun_family = AF_UNIX;
-        memcpy(addr, &sun, sizeof(struct sockaddr_un));
+        p101_memcpy(env, addr, &sun, sizeof(struct sockaddr_un));
         addr->ss_family = AF_UNIX;
         goto done;
     }
