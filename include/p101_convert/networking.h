@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <p101_env/env.h>
 #include <p101_error/error.h>
+#include <sys/socket.h>
 
 in_port_t parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str);
 void      convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr);

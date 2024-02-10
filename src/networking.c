@@ -16,7 +16,9 @@
 
 #include "p101_convert/networking.h"
 #include "p101_convert/integer.h"
+#include <netinet/in.h>
 #include <p101_posix/arpa/p101_inet.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
