@@ -18,103 +18,102 @@
 #include <limits.h>
 #include <p101_c/p101_inttypes.h>
 
-#define BASE_TEN 10
-
 static intmax_t  parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value);
 static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_error *err, const char *str, uintmax_t default_value, uintmax_t max_value);
+
+#define BASE_TEN 10
 
 static intmax_t parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value)
 {
     char    *endptr;
     intmax_t parsed_value;
-    intmax_t value;
 
     P101_TRACE(env);
     parsed_value = p101_strtoimax(env, err, str, &endptr, BASE_TEN);
 
-    if(p101_error_has_error(err) || *endptr != '\0' || endptr == str)
+    // Check for errors or no conversion
+    if(p101_error_has_error(err) || endptr == str)
     {
-        if(!p101_error_has_error(err) && *endptr != '\0')
-        {
-            // There are characters after the number
-            P101_ERROR_RAISE_SYSTEM(err, "Unexpected characters after the number", 1);
-        }
-        else if(!p101_error_has_error(err) && endptr == str)
+        if(!p101_error_has_error(err))
         {
             // No digits were found
             P101_ERROR_RAISE_SYSTEM(err, "No digits were found", 1);
         }
-        else if(!p101_error_has_error(err))
-        {
-            // Other parsing errors
-            P101_ERROR_RAISE_SYSTEM(err, "Parsing error", 1);
-        }
 
-        value = default_value;
+        return default_value;
     }
-    else if(parsed_value < min_value)
+
+    // Check for additional characters after the number
+    if(*endptr != '\0')
+    {
+        // There are characters after the number
+        P101_ERROR_RAISE_SYSTEM(err, "Unexpected characters after the number", 1);
+        return default_value;
+    }
+
+    // Check for range violations
+    if(parsed_value < min_value)
     {
         // Parsed value is below min_value
         P101_ERROR_RAISE_SYSTEM(err, "Parsed value is below minimum", 1);
-        value = min_value;
+        return min_value;
     }
-    else if(parsed_value > max_value)
+
+    if(parsed_value > max_value)
     {
         // Parsed value is above max_value
         P101_ERROR_RAISE_SYSTEM(err, "Parsed value is above maximum", 1);
-        value = max_value;
-    }
-    else
-    {
-        // Parsed value is within range
-        value = parsed_value;
+        return max_value;
     }
 
-    return value;
+    // If we reach here, parsed_value is valid and within range
+    return parsed_value;
 }
+
+#include <inttypes.h>    // For uintmax_t
+#include <stddef.h>      // For NULL
+
+// Assume P101_TRACE, p101_strtoumax, p101_error_has_error, and P101_ERROR_RAISE_SYSTEM are properly defined elsewhere.
+
+#define BASE_TEN 10
 
 static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_error *err, const char *str, uintmax_t default_value, uintmax_t max_value)
 {
     char     *endptr;
     uintmax_t parsed_value;
-    uintmax_t value;
 
     P101_TRACE(env);
     parsed_value = p101_strtoumax(env, err, str, &endptr, BASE_TEN);
 
-    if(p101_error_has_error(err) || *endptr != '\0' || endptr == str)
+    // Check for errors or no conversion
+    if(p101_error_has_error(err) || endptr == str)
     {
-        if(!p101_error_has_error(err) && *endptr != '\0')
-        {
-            // There are characters after the number
-            P101_ERROR_RAISE_SYSTEM(err, "Unexpected characters after the number", 1);
-        }
-        else if(!p101_error_has_error(err) && endptr == str)
+        if(!p101_error_has_error(err))
         {
             // No digits were found
             P101_ERROR_RAISE_SYSTEM(err, "No digits were found", 1);
         }
-        else if(!p101_error_has_error(err))
-        {
-            // Other parsing errors
-            P101_ERROR_RAISE_SYSTEM(err, "Parsing error", 1);
-        }
-
-        value = default_value;
+        return default_value;
     }
-    else if(parsed_value > max_value)
+
+    // Check for additional characters after the number
+    if(*endptr != '\0')
+    {
+        // There are characters after the number
+        P101_ERROR_RAISE_SYSTEM(err, "Unexpected characters after the number", 1);
+        return default_value;
+    }
+
+    // Check for range violations
+    if(parsed_value > max_value)
     {
         // Parsed value is above max_value
         P101_ERROR_RAISE_SYSTEM(err, "Parsed value is above maximum", 1);
-        value = max_value;
-    }
-    else
-    {
-        // Parsed value is within range
-        value = parsed_value;
+        return max_value;
     }
 
-    return value;
+    // If we reach here, parsed_value is valid and within range
+    return parsed_value;
 }
 
 char p101_parse_char(const struct p101_env *env, struct p101_error *err, const char *str, char default_value)

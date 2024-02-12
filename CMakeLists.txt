@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(101_convert
+project(p101_convert
     VERSION 0.0.1
     DESCRIPTION ""
     LANGUAGES C)
@@ -21,9 +21,9 @@ set(HEADER_LIST
 )
 
 # Build the shared library
-add_library(101_convert SHARED ${SOURCES})
-target_include_directories(101_convert PUBLIC ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(101_convert PRIVATE /usr/local/include)
+add_library(p101_convert SHARED ${SOURCES})
+target_include_directories(p101_convert PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(p101_convert PRIVATE /usr/local/include)
 
 # Extract the compiler name without the path
 get_filename_component(COMPILER_NAME "${CMAKE_C_COMPILER}" NAME)
@@ -56,64 +56,64 @@ split_string_into_list("${WARNING_FLAGS_STRING}" WARNING_FLAGS_LIST)
 if(SANITIZER_address STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/address_sanitizer_flags.txt" ADDRESS_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" ADDRESS_SANITIZER_FLAGS_LIST "${ADDRESS_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${ADDRESS_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${ADDRESS_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${ADDRESS_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${ADDRESS_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_cfi STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/cfi_sanitizer_flags.txt" CFI_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" CFI_SANITIZER_FLAGS_LIST "${CFI_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${CFI_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${CFI_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${CFI_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${CFI_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_dataflow STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/dataflow_sanitizer_flags.txt" DATAFLOW_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" DATAFLOW_SANITIZER_FLAGS_LIST "${DATAFLOW_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${DATAFLOW_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${DATAFLOW_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${DATAFLOW_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${DATAFLOW_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_hwaddress STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/hwaddress_sanitizer_flags.txt" HWADDRESS_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" HWADDRESS_SANITIZER_FLAGS_LIST "${HWADDRESS_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${HWADDRESS_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${HWADDRESS_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${HWADDRESS_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${HWADDRESS_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_memory STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/memory_sanitizer_flags.txt" MEMORY_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" MEMORY_SANITIZER_FLAGS_LIST "${MEMORY_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${MEMORY_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${MEMORY_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${MEMORY_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${MEMORY_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_pointer_overflow STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/pointer_overflow_sanitizer_flags.txt" POINTER_OVERFLOW_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" POINTER_OVERFLOW_SANITIZER_FLAGS_LIST "${POINTER_OVERFLOW_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${POINTER_OVERFLOW_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${POINTER_OVERFLOW_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${POINTER_OVERFLOW_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${POINTER_OVERFLOW_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_safe_stack STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/safe_stack_sanitizer_flags.txt" SAFE_STACK_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" SAFE_STACK_SANITIZER_FLAGS_LIST "${SAFE_STACK_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${SAFE_STACK_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${SAFE_STACK_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${SAFE_STACK_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${SAFE_STACK_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_thread STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/thread_sanitizer_flags.txt" THREAD_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" THREAD_SANITIZER_FLAGS_LIST "${THREAD_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${THREAD_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${THREAD_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${THREAD_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${THREAD_SANITIZER_FLAGS_LIST})
 endif()
 
 if(SANITIZER_undefined STREQUAL "ON")
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/.flags/${COMPILER_NAME}/undefined_sanitizer_flags.txt" UNDEFINED_SANITIZER_FLAGS_STRING)
     string(REPLACE " " ";" UNDEFINED_SANITIZER_FLAGS_LIST "${UNDEFINED_SANITIZER_FLAGS_STRING}")
-    target_compile_options(101_convert PRIVATE ${UNDEFINED_SANITIZER_FLAGS_LIST})
-    target_link_options(101_convert PRIVATE ${UNDEFINED_SANITIZER_FLAGS_LIST})
+    target_compile_options(p101_convert PRIVATE ${UNDEFINED_SANITIZER_FLAGS_LIST})
+    target_link_options(p101_convert PRIVATE ${UNDEFINED_SANITIZER_FLAGS_LIST})
 endif()
 
 # Check if the system uses 64-bit libraries
@@ -126,14 +126,14 @@ else()
     set(LIBSUFFIX "")
 endif()
 
-target_link_directories(101_convert PRIVATE /usr/local/lib${LIBSUFFIX})
-target_link_options(101_convert PRIVATE ${INSTRUMENTATION_FLAGS_LIST})
+target_link_directories(p101_convert PRIVATE /usr/local/lib${LIBSUFFIX})
+target_link_options(p101_convert PRIVATE ${INSTRUMENTATION_FLAGS_LIST})
 
 # Link libraries
-target_link_libraries(101_convert PRIVATE p101_error)
-target_link_libraries(101_convert PRIVATE p101_env)
-target_link_libraries(101_convert PRIVATE p101_c)
-target_link_libraries(101_convert PRIVATE p101_posix)
+target_link_libraries(p101_convert PRIVATE p101_error)
+target_link_libraries(p101_convert PRIVATE p101_env)
+target_link_libraries(p101_convert PRIVATE p101_c)
+target_link_libraries(p101_convert PRIVATE p101_posix)
 
 # Common compiler flags
 set(STANDARD_FLAGS
@@ -146,7 +146,7 @@ set(STANDARD_FLAGS
 )
 
 # Set compiler flags for the target
-target_compile_options(101_convert PRIVATE
+target_compile_options(p101_convert PRIVATE
         ${STANDARD_FLAGS}
         ${ANALYZER_FLAGS_LIST}
         ${DEBUG_FLAGS_LIST}
@@ -210,18 +210,18 @@ if (CMAKE_C_COMPILER MATCHES ".*/clang.*")
 
     # Add dependencies including 'analysis' for Clang compiler
     add_custom_target(strict
-        DEPENDS 101_convert analysis lint cppcheck
+        DEPENDS p101_convert analysis lint cppcheck
         COMMENT "Running code analysis tools"
     )
 else()
     # Add dependencies without 'analysis' for other compilers
     add_custom_target(strict
-        DEPENDS 101_convert lint cppcheck
+        DEPENDS p101_convert lint cppcheck
         COMMENT "Running code analysis tools"
     )
 endif()
 
-add_dependencies(101_convert format)
+add_dependencies(p101_convert format)
 
 # Set the default target to be 'strict'
 add_custom_target(default_target DEPENDS strict)
@@ -230,12 +230,12 @@ add_custom_target(default_target DEPENDS strict)
 set(INSTALL_LIB_DIR lib${LIBSUFFIX} CACHE PATH "Installation directory for libraries")
 mark_as_advanced(INSTALL_LIB_DIR)
 
-set_target_properties(101_convert PROPERTIES
+set_target_properties(p101_convert PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR})
 
 # Install the library target
-install(TARGETS 101_convert
+install(TARGETS p101_convert
     LIBRARY DESTINATION ${INSTALL_LIB_DIR}
     COMPONENT library
     NAMELINK_COMPONENT development
@@ -243,5 +243,5 @@ install(TARGETS 101_convert
 
 # Install header files
 install(FILES ${HEADER_LIST}
-    DESTINATION include/101_convert
+    DESTINATION include/p101_convert
 )
