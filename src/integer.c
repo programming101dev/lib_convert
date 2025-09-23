@@ -21,7 +21,7 @@
 static intmax_t  parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value);
 static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_error *err, const char *str, uintmax_t default_value, uintmax_t max_value);
 
-#define BASE_TEN 10
+#define BASE_TEN 10    // NOLINT(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum)
 
 static intmax_t parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value)
 {
@@ -75,7 +75,7 @@ static intmax_t parse_integer(const struct p101_env *env, struct p101_error *err
 
 // Assume P101_TRACE, p101_strtoumax, p101_error_has_error, and P101_ERROR_RAISE_SYSTEM are properly defined elsewhere.
 
-#define BASE_TEN 10
+#define BASE_TEN 10    // NOLINT(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum)
 
 static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_error *err, const char *str, uintmax_t default_value, uintmax_t max_value)
 {
