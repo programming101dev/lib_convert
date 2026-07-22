@@ -141,7 +141,7 @@ long p101_parse_long(const struct p101_env *env, struct p101_error *err, const c
 {
     P101_TRACE(env);
 
-    return (long)parse_integer(env, err, str, default_value, LONG_MIN, LONG_MAX);
+    return parse_integer(env, err, str, default_value, LONG_MIN, LONG_MAX);
 }
 
 long long p101_parse_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
@@ -176,7 +176,7 @@ unsigned long p101_parse_unsigned_long(const struct p101_env *env, struct p101_e
 {
     P101_TRACE(env);
 
-    return (unsigned long)parse_unsigned_integer(env, err, str, default_value, ULONG_MAX);
+    return parse_unsigned_integer(env, err, str, default_value, ULONG_MAX);
 }
 
 unsigned long long p101_parse_unsigned_long_long(const struct p101_env *env, struct p101_error *err, const char *str, unsigned long long default_value)
@@ -211,7 +211,7 @@ long p101_parse_negative_long(const struct p101_env *env, struct p101_error *err
 {
     P101_TRACE(env);
 
-    return (long)parse_integer(env, err, str, default_value, LONG_MIN, -1L);
+    return parse_integer(env, err, str, default_value, LONG_MIN, -1L);
 }
 
 long long p101_parse_negative_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
@@ -246,7 +246,7 @@ long p101_parse_positive_long(const struct p101_env *env, struct p101_error *err
 {
     P101_TRACE(env);
 
-    return (long)parse_integer(env, err, str, default_value, 0, LONG_MAX);
+    return parse_integer(env, err, str, default_value, 0, LONG_MAX);
 }
 
 long long p101_parse_positive_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
