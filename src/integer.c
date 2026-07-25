@@ -16,6 +16,7 @@
 
 #include "p101_convert/integer.h"
 #include <limits.h>
+#include <p101_c/p101_ctype.h>
 #include <p101_c/p101_inttypes.h>
 
 static intmax_t  parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value);
@@ -70,19 +71,33 @@ static intmax_t parse_integer(const struct p101_env *env, struct p101_error *err
     return parsed_value;
 }
 
-#include <inttypes.h>    // For uintmax_t
-#include <stddef.h>      // For NULL
-
-// Assume P101_TRACE, p101_strtoumax, p101_error_has_error, and P101_ERROR_RAISE_SYSTEM are properly defined elsewhere.
-
-#define BASE_TEN 10    // NOLINT(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum)
-
 static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_error *err, const char *str, uintmax_t default_value, uintmax_t max_value)
 {
-    char     *endptr;
-    uintmax_t parsed_value;
+    char       *endptr;
+    const char *cursor;
+    uintmax_t   parsed_value;
 
     P101_TRACE(env);
+
+    // strtoumax() accepts a leading '-' and returns the value WRAPPED around
+    // (so "-1" comes back as UINTMAX_MAX) without setting errno. The range
+    // check further down cannot catch that for the widest types, because the
+    // wrapped value is already inside the type's range -- "-1" would silently
+    // become 18446744073709551615. Refuse the sign here instead. Whitespace is
+    // skipped the same way strtoumax() itself skips it, so " -1" is caught too.
+    cursor = str;
+
+    while(p101_isspace(env, (unsigned char)*cursor))
+    {
+        cursor++;
+    }
+
+    if(*cursor == '-')
+    {
+        P101_ERROR_RAISE_SYSTEM(err, "A negative value is not valid for an unsigned type", 1);
+        return default_value;
+    }
+
     parsed_value = p101_strtoumax(env, err, str, &endptr, BASE_TEN);
 
     // Check for errors or no conversion

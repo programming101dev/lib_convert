@@ -37,33 +37,45 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
 
     P101_TRACE(env);
 
-    if(addr == NULL)
+    if(addr == NULL || address == NULL)
     {
         P101_ERROR_RAISE_CHECK(err);
         goto done;
     }
 
-    // Try to parse the address as IPv4
-    if(p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 0)
+    // Start from a known state. Whatever family we settle on, the bytes it does
+    // not use must be zero rather than whatever the caller left on the stack.
+    p101_memset(env, addr, 0, sizeof(*addr));
+
+    // inet_pton() returns 1 on success, 0 when the string is not an address of
+    // that family, and -1 on error -- so success is "== 1", not "== 0". On a
+    // non-match it leaves the destination untouched, which is why each local
+    // sockaddr is zeroed before it is used.
+    p101_memset(env, &sin, 0, sizeof(sin));
+
+    if(p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 1)
     {
-        addr->ss_family = AF_INET;
+        sin.sin_family = AF_INET;
         p101_memcpy(env, addr, &sin, sizeof(struct sockaddr_in));
+        addr->ss_family = AF_INET;
         goto done;
     }
 
     p101_error_reset(err);
+    p101_memset(env, &sin6, 0, sizeof(sin6));
 
-    // Try to parse the address as IPv6
-    if(p101_inet_pton(env, err, AF_INET6, address, &sin6.sin6_addr) == 0)
+    if(p101_inet_pton(env, err, AF_INET6, address, &sin6.sin6_addr) == 1)
     {
-        addr->ss_family = AF_INET6;
+        sin6.sin6_family = AF_INET6;
         p101_memcpy(env, addr, &sin6, sizeof(struct sockaddr_in6));
+        addr->ss_family = AF_INET6;
         goto done;
     }
 
     p101_error_reset(err);
 
-    // If parsing as IPv4 or IPv6 fails, check if the address is a valid Unix domain socket
+    // Not an IPv4 or IPv6 literal: a string short enough to fit in sun_path is
+    // taken to be a Unix domain socket path.
     if(p101_strlen(env, address) <= sizeof(sun.sun_path) - 1)
     {
         p101_memset(env, &sun, 0, sizeof(sun));
@@ -74,7 +86,7 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
         goto done;
     }
 
-    // If none of the above conditions are met, set the address family to AF_UNSPEC
+    // Not an address of any family we understand, and too long to be a path.
     addr->ss_family = AF_UNSPEC;
 
 done:
