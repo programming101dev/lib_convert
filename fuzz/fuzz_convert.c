@@ -40,15 +40,27 @@
 
 /* Deliberately not assert(): this must fire even if NDEBUG is ever defined,
  * because a silenced invariant check is worse than no check at all. */
-#define FUZZ_CHECK(cond, msg, input)                                                    \
-    do                                                                                  \
-    {                                                                                   \
-        if(!(cond))                                                                     \
-        {                                                                               \
-            fprintf(stderr, "INVARIANT VIOLATED: %s\n  input: \"%s\"\n", (msg), (input));\
-            abort();                                                                    \
-        }                                                                               \
+#define FUZZ_CHECK(cond, msg, input)                                                                                                                                                                                                                               \
+    do                                                                                                                                                                                                                                                             \
+    {                                                                                                                                                                                                                                                              \
+        if(!(cond))                                                                                                                                                                                                                                                \
+        {                                                                                                                                                                                                                                                          \
+            fprintf(stderr, "INVARIANT VIOLATED: %s\n  input: \"%s\"\n", (msg), (input));                                                                                                                                                                          \
+            abort();                                                                                                                                                                                                                                               \
+        }                                                                                                                                                                                                                                                          \
     } while(0)
+
+enum
+{
+    IPV4_DECIMAL_BASE = 10U,
+    IPV4_OCTET_COUNT  = 4U,
+    IPV4_DOT_COUNT    = IPV4_OCTET_COUNT - 1U,
+    IPV4_MAX_DIGITS   = 3U,
+    IPV4_MAX_OCTET    = 255U,
+    ASCII_ZERO        = '0',
+    ASCII_NINE        = '9',
+    ASCII_DOT         = '.'
+};
 
 /* The first non-blank character the parsers will see. */
 static int leading_sign_is_minus(const char *s)
@@ -59,6 +71,82 @@ static int leading_sign_is_minus(const char *s)
     }
 
     return *s == '-';
+}
+
+static int strict_ipv4_literal(const char *s)
+{
+    unsigned int octet;
+    unsigned int octets;
+    unsigned int digits;
+
+    octet  = 0;
+    octets = 0;
+    digits = 0;
+
+    if(s == NULL || *s == '\0')
+    {
+        return 0;
+    }
+
+    while(*s != '\0')
+    {
+        if(*s >= ASCII_ZERO && *s <= ASCII_NINE)
+        {
+            if(digits == 1U && octet == 0U)
+            {
+                return 0;
+            }
+            octet = (octet * IPV4_DECIMAL_BASE) + (unsigned int)(*s - ASCII_ZERO);
+            digits++;
+            if(digits > IPV4_MAX_DIGITS || octet > IPV4_MAX_OCTET)
+            {
+                return 0;
+            }
+        }
+        else if(*s == ASCII_DOT)
+        {
+            if(digits == 0U || octets >= IPV4_DOT_COUNT)
+            {
+                return 0;
+            }
+            octets++;
+            octet  = 0;
+            digits = 0;
+        }
+        else
+        {
+            return 0;
+        }
+        s++;
+    }
+
+    return (octets == IPV4_DOT_COUNT && digits > 0U) ? 1 : 0;
+}
+
+static int dotted_numeric_text(const char *s)
+{
+    int saw_dot;
+
+    saw_dot = 0;
+    if(s == NULL || *s == '\0')
+    {
+        return 0;
+    }
+
+    while(*s != '\0')
+    {
+        if(*s == ASCII_DOT)
+        {
+            saw_dot = 1;
+        }
+        else if(*s < ASCII_ZERO || *s > ASCII_NINE)
+        {
+            return 0;
+        }
+        s++;
+    }
+
+    return saw_dot;
 }
 
 static void check_signed(const struct p101_env *env, struct p101_error *err, const char *s)
@@ -108,7 +196,7 @@ static void check_signed(const struct p101_env *env, struct p101_error *err, con
 
     if(!p101_error_has_error(err))
     {
-        FUZZ_CHECK(got >= 0, "p101_parse_positive_int accepted a negative value", s);
+        FUZZ_CHECK(got > 0, "p101_parse_positive_int accepted a non-positive value", s);
     }
 }
 
@@ -172,7 +260,11 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
     is_v4 = (inet_pton(AF_INET, s, &v4) == 1);
     is_v6 = (inet_pton(AF_INET6, s, &v6) == 1);
 
-    if(is_v4)
+    if(dotted_numeric_text(s) && !strict_ipv4_literal(s))
+    {
+        expected = AF_UNSPEC;
+    }
+    else if(is_v4)
     {
         expected = AF_INET;
     }
@@ -225,7 +317,6 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
         FUZZ_CHECK(strcmp(stored->sun_path, s) == 0, "convert_address stored the wrong sun_path", s);
     }
 }
-
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {

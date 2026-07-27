@@ -240,35 +240,35 @@ char p101_parse_positive_char(const struct p101_env *env, struct p101_error *err
 {
     P101_TRACE(env);
 
-    return (char)parse_integer(env, err, str, default_value, 0, CHAR_MAX);
+    return (char)parse_integer(env, err, str, default_value, 1, CHAR_MAX);
 }
 
 short p101_parse_positive_short(const struct p101_env *env, struct p101_error *err, const char *str, short default_value)
 {
     P101_TRACE(env);
 
-    return (short)parse_integer(env, err, str, default_value, 0, SHRT_MAX);
+    return (short)parse_integer(env, err, str, default_value, 1, SHRT_MAX);
 }
 
 int p101_parse_positive_int(const struct p101_env *env, struct p101_error *err, const char *str, int default_value)
 {
     P101_TRACE(env);
 
-    return (int)parse_integer(env, err, str, default_value, 0, INT_MAX);
+    return (int)parse_integer(env, err, str, default_value, 1, INT_MAX);
 }
 
 long p101_parse_positive_long(const struct p101_env *env, struct p101_error *err, const char *str, long default_value)
 {
     P101_TRACE(env);
 
-    return parse_integer(env, err, str, default_value, 0, LONG_MAX);
+    return parse_integer(env, err, str, default_value, 1, LONG_MAX);
 }
 
 long long p101_parse_positive_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
 {
     P101_TRACE(env);
 
-    return (long long)parse_integer(env, err, str, default_value, 0, LLONG_MAX);
+    return (long long)parse_integer(env, err, str, default_value, 1, LLONG_MAX);
 }
 
 int8_t p101_parse_int8_t(const struct p101_env *env, struct p101_error *err, const char *str, int8_t default_value)
@@ -338,19 +338,19 @@ int8_t p101_parse_positive_int8_t_char(const struct p101_env *env, struct p101_e
 {
     P101_TRACE(env);
 
-    return (int8_t)parse_integer(env, err, str, default_value, 0, INT8_MAX);
+    return (int8_t)parse_integer(env, err, str, default_value, 1, INT8_MAX);
 }
 
 int16_t p101_parse_positive_int16_t_short(const struct p101_env *env, struct p101_error *err, const char *str, int16_t default_value)
 {
     P101_TRACE(env);
 
-    return (int16_t)parse_integer(env, err, str, default_value, 0, INT16_MAX);
+    return (int16_t)parse_integer(env, err, str, default_value, 1, INT16_MAX);
 }
 
 int32_t p101_parse_positive_int32_t_int(const struct p101_env *env, struct p101_error *err, const char *str, int32_t default_value)
 {
     P101_TRACE(env);
 
-    return (int32_t)parse_integer(env, err, str, default_value, 0, INT32_MAX);
+    return (int32_t)parse_integer(env, err, str, default_value, 1, INT32_MAX);
 }

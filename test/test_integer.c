@@ -173,14 +173,15 @@ static void test_parse_negative_int_requires_a_negative(void)
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
-static void test_parse_positive_int_admits_zero(void)
+static void test_parse_positive_int_requires_positive(void)
 {
-    /* Documented quirk, pinned so a future edit has to be deliberate:
-     * "positive" here means min_value == 0, i.e. NON-NEGATIVE. Zero passes. */
-    TEST_ASSERT_EQUAL_INT(0, p101_parse_positive_int(env, error, "0", -1));
+    TEST_ASSERT_EQUAL_INT(5, p101_parse_positive_int(env, error, "5", -1));
     TEST_ASSERT_FALSE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT(0, p101_parse_positive_int(env, error, "-5", -1));
+    TEST_ASSERT_EQUAL_INT(1, p101_parse_positive_int(env, error, "0", -1));
+    TEST_ASSERT_TRUE(p101_error_has_error(error));
+    reset();
+    TEST_ASSERT_EQUAL_INT(1, p101_parse_positive_int(env, error, "-5", -1));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
@@ -252,7 +253,7 @@ int main(void)
     RUN_TEST(test_parse_int_rejects_intmax_overflow);
     RUN_TEST(test_parse_int8_and_int16_ranges);
     RUN_TEST(test_parse_negative_int_requires_a_negative);
-    RUN_TEST(test_parse_positive_int_admits_zero);
+    RUN_TEST(test_parse_positive_int_requires_positive);
     RUN_TEST(test_parse_unsigned_accepts_range);
     RUN_TEST(test_parse_unsigned_rejects_negative_input);
     RUN_TEST(test_parse_unsigned_rejects_negative_zero_too);

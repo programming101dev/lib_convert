@@ -19,8 +19,103 @@
 #include <netinet/in.h>
 #include <p101_c/p101_string.h>
 #include <p101_posix/arpa/p101_inet.h>
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
+enum
+{
+    IPV4_DECIMAL_BASE = 10U,
+    IPV4_OCTET_COUNT  = 4U,
+    IPV4_DOT_COUNT    = IPV4_OCTET_COUNT - 1U,
+    IPV4_MAX_DIGITS   = 3U,
+    IPV4_MAX_OCTET    = 255U,
+    ASCII_ZERO        = '0',
+    ASCII_NINE        = '9',
+    ASCII_DOT         = '.'
+};
+
+static bool is_strict_ipv4_literal(const struct p101_env *env, const char *address);
+static bool is_dotted_numeric_text(const struct p101_env *env, const char *address);
+
+static bool is_strict_ipv4_literal(const struct p101_env *env, const char *address)
+{
+    unsigned int octet;
+    unsigned int octets;
+    unsigned int digits;
+
+    (void)env;
+    octet  = 0;
+    octets = 0;
+    digits = 0;
+
+    if(address == NULL || *address == '\0')
+    {
+        return false;
+    }
+
+    while(*address != '\0')
+    {
+        if(*address >= ASCII_ZERO && *address <= ASCII_NINE)
+        {
+            if(digits == 1U && octet == 0U)
+            {
+                return false;
+            }
+            octet = (octet * IPV4_DECIMAL_BASE) + (unsigned int)(*address - ASCII_ZERO);
+            digits++;
+            if(digits > IPV4_MAX_DIGITS || octet > IPV4_MAX_OCTET)
+            {
+                return false;
+            }
+        }
+        else if(*address == ASCII_DOT)
+        {
+            if(digits == 0U || octets >= IPV4_DOT_COUNT)
+            {
+                return false;
+            }
+            octets++;
+            octet  = 0;
+            digits = 0;
+        }
+        else
+        {
+            return false;
+        }
+
+        address++;
+    }
+
+    return (octets == IPV4_DOT_COUNT && digits > 0U) != 0;
+}
+
+static bool is_dotted_numeric_text(const struct p101_env *env, const char *address)
+{
+    bool saw_dot;
+
+    (void)env;
+    saw_dot = false;
+    if(address == NULL || *address == '\0')
+    {
+        return false;
+    }
+
+    while(*address != '\0')
+    {
+        if(*address == ASCII_DOT)
+        {
+            saw_dot = true;
+        }
+        else if(*address < ASCII_ZERO || *address > ASCII_NINE)
+        {
+            return false;
+        }
+        address++;
+    }
+
+    return saw_dot;
+}
 
 in_port_t parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str)
 {
@@ -53,7 +148,7 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     // sockaddr is zeroed before it is used.
     p101_memset(env, &sin, 0, sizeof(sin));
 
-    if(p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 1)
+    if(is_strict_ipv4_literal(env, address) && p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 1)
     {
         sin.sin_family = AF_INET;
         p101_memcpy(env, addr, &sin, sizeof(struct sockaddr_in));
@@ -73,6 +168,12 @@ void convert_address(const struct p101_env *env, struct p101_error *err, const c
     }
 
     p101_error_reset(err);
+
+    if(is_dotted_numeric_text(env, address))
+    {
+        addr->ss_family = AF_UNSPEC;
+        goto done;
+    }
 
     // Not an IPv4 or IPv6 literal: a string short enough to fit in sun_path is
     // taken to be a Unix domain socket path.
