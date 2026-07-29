@@ -3,7 +3,7 @@
 # CMAKE_C_COMPILER. Kept separate from the strict analysis build.
 #
 # TARGET: this library's own string parsers -- the p101_parse_* family in
-# src/integer.c and parse_in_port_t()/convert_address() in src/networking.c.
+# src/integer.c and p101_parse_in_port_t()/p101_convert_address() in src/networking.c.
 # Those are the functions that turn UNTRUSTED text (argv, config files, network
 # input) into integers and sockaddrs, so they are the right thing to fuzz.
 #

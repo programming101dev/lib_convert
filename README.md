@@ -2,6 +2,29 @@
 
 Welcome to the `lib_convert` repository — integer and networking conversion utilities, part of the Programming 101 C library collection. This guide will help you set up, build, and install the library.
 
+## API contracts
+
+The integer functions parse one complete base-10 string. Leading whitespace
+and a leading `+` are accepted; trailing whitespace or other trailing
+characters are rejected. Signed, unsigned, positive, and negative variants are
+available for native and fixed-width integer types.
+
+Every integer failure raises an error and returns the caller's `default_value`.
+Syntax failures use `P101_CONVERT_ERROR_SYNTAX`; range and sign failures use
+`P101_CONVERT_ERROR_RANGE`. A null string is a failed API check.
+
+`p101_convert_address` accepts:
+
+- strict IPv4 and IPv6 literals; or
+- an explicit Unix socket pathname containing `/` (`./socket` for the current
+  directory).
+
+It returns the populated `socklen_t`, sets `AF_UNSPEC` and returns zero on
+failure, and preserves unrelated errors already present in the caller's error
+object. Host names, empty strings, malformed literals, and ambiguous bare Unix
+socket names are rejected. Name resolution belongs in the `getaddrinfo`
+wrappers rather than this literal converter.
+
 ## **Table of Contents**
 
 1. [Cloning the Repository](#cloning-the-repository)

@@ -36,6 +36,7 @@ set(p101_convert_SOURCES
 
 # Header files for installation
 set(p101_convert_HEADERS
+        include/p101_convert/errors.h
         include/p101_convert/integer.h
         include/p101_convert/networking.h
 )

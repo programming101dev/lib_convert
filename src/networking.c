@@ -15,11 +15,15 @@
  */
 
 #include "p101_convert/networking.h"
+#include "p101_convert/errors.h"
 #include "p101_convert/integer.h"
+#include <errno.h>
 #include <netinet/in.h>
 #include <p101_c/p101_string.h>
 #include <p101_posix/arpa/p101_inet.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -37,21 +41,24 @@ enum
 
 static bool is_strict_ipv4_literal(const struct p101_env *env, const char *address);
 static bool is_dotted_numeric_text(const struct p101_env *env, const char *address);
+static bool is_unix_path(const struct p101_env *env, const char *address);
 
 static bool is_strict_ipv4_literal(const struct p101_env *env, const char *address)
 {
     unsigned int octet;
     unsigned int octets;
     unsigned int digits;
+    bool         valid;
 
-    (void)env;
+    P101_TRACE(env);
     octet  = 0;
     octets = 0;
     digits = 0;
+    valid  = false;
 
     if(address == NULL || *address == '\0')
     {
-        return false;
+        goto done;
     }
 
     while(*address != '\0')
@@ -60,20 +67,20 @@ static bool is_strict_ipv4_literal(const struct p101_env *env, const char *addre
         {
             if(digits == 1U && octet == 0U)
             {
-                return false;
+                goto done;
             }
             octet = (octet * IPV4_DECIMAL_BASE) + (unsigned int)(*address - ASCII_ZERO);
             digits++;
             if(digits > IPV4_MAX_DIGITS || octet > IPV4_MAX_OCTET)
             {
-                return false;
+                goto done;
             }
         }
         else if(*address == ASCII_DOT)
         {
             if(digits == 0U || octets >= IPV4_DOT_COUNT)
             {
-                return false;
+                goto done;
             }
             octets++;
             octet  = 0;
@@ -81,24 +88,31 @@ static bool is_strict_ipv4_literal(const struct p101_env *env, const char *addre
         }
         else
         {
-            return false;
+            goto done;
         }
 
         address++;
     }
 
-    return (octets == IPV4_DOT_COUNT && digits > 0U) != 0;
+    if(octets == IPV4_DOT_COUNT && digits > 0U)
+    {
+        valid = true;
+    }
+
+done:
+    P101_TRACE_EXIT(env);
+    return valid;
 }
 
 static bool is_dotted_numeric_text(const struct p101_env *env, const char *address)
 {
     bool saw_dot;
 
-    (void)env;
+    P101_TRACE(env);
     saw_dot = false;
     if(address == NULL || *address == '\0')
     {
-        return false;
+        goto done;
     }
 
     while(*address != '\0')
@@ -109,87 +123,142 @@ static bool is_dotted_numeric_text(const struct p101_env *env, const char *addre
         }
         else if(*address < ASCII_ZERO || *address > ASCII_NINE)
         {
-            return false;
+            saw_dot = false;
+            goto done;
         }
         address++;
     }
 
+done:
+    P101_TRACE_EXIT(env);
     return saw_dot;
 }
 
-in_port_t parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str)
+static bool is_unix_path(const struct p101_env *env, const char *address)
 {
-    P101_TRACE(env);
+    bool ret_val;
 
-    return p101_parse_uint16_t(env, err, str, 0);
+    P101_TRACE(env);
+    ret_val = false;
+    if(address != NULL && address[0] != '\0' && p101_strchr(env, address, '/') != NULL)
+    {
+        ret_val = true;
+    }
+    P101_TRACE_EXIT(env);
+    return ret_val;
 }
 
-void convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr)
+in_port_t p101_parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str)
+{
+    in_port_t ret_val;
+
+    P101_TRACE(env);
+    ret_val = p101_parse_uint16_t(env, err, str, 0);
+    P101_TRACE_EXIT(env);
+    return ret_val;
+}
+
+socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr)
 {
     struct sockaddr_un  sun;
     struct sockaddr_in  sin;
     struct sockaddr_in6 sin6;
+    size_t              path_length;
+    socklen_t           ret_val;
+    int                 parse_result;
 
     P101_TRACE(env);
+    ret_val = 0;
 
-    if(addr == NULL || address == NULL)
+    if(addr == NULL)
     {
         P101_ERROR_RAISE_CHECK(err);
         goto done;
     }
 
-    // Start from a known state. Whatever family we settle on, the bytes it does
-    // not use must be zero rather than whatever the caller left on the stack.
     p101_memset(env, addr, 0, sizeof(*addr));
-
-    // inet_pton() returns 1 on success, 0 when the string is not an address of
-    // that family, and -1 on error -- so success is "== 1", not "== 0". On a
-    // non-match it leaves the destination untouched, which is why each local
-    // sockaddr is zeroed before it is used.
-    p101_memset(env, &sin, 0, sizeof(sin));
-
-    if(is_strict_ipv4_literal(env, address) && p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr) == 1)
+    addr->ss_family = AF_UNSPEC;
+    if(address == NULL)
     {
-        sin.sin_family = AF_INET;
-        p101_memcpy(env, addr, &sin, sizeof(struct sockaddr_in));
-        addr->ss_family = AF_INET;
+        P101_ERROR_RAISE_CHECK(err);
+        goto done;
+    }
+    if(p101_error_has_error(err))
+    {
         goto done;
     }
 
-    p101_error_reset(err);
-    p101_memset(env, &sin6, 0, sizeof(sin6));
+    p101_memset(env, &sin, 0, sizeof(sin));
+    if(is_strict_ipv4_literal(env, address))
+    {
+        parse_result = p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr);
+        if(parse_result == 1)
+        {
+            sin.sin_family = AF_INET;
+#if defined(__APPLE__) || defined(__FreeBSD__)
+            sin.sin_len = (uint8_t)sizeof(sin);
+#endif
+            p101_memcpy(env, addr, &sin, sizeof(sin));
+            ret_val = (socklen_t)sizeof(sin);
+            goto done;
+        }
+        if(p101_error_has_error(err))
+        {
+            if(p101_error_is_errno(err, EINVAL))
+            {
+                p101_error_reset(err);
+            }
+            else
+            {
+                goto done;
+            }
+        }
+    }
 
-    if(p101_inet_pton(env, err, AF_INET6, address, &sin6.sin6_addr) == 1)
+    p101_memset(env, &sin6, 0, sizeof(sin6));
+    parse_result = p101_inet_pton(env, err, AF_INET6, address, &sin6.sin6_addr);
+    if(parse_result == 1)
     {
         sin6.sin6_family = AF_INET6;
-        p101_memcpy(env, addr, &sin6, sizeof(struct sockaddr_in6));
-        addr->ss_family = AF_INET6;
+#if defined(__APPLE__) || defined(__FreeBSD__)
+        sin6.sin6_len = (uint8_t)sizeof(sin6);
+#endif
+        p101_memcpy(env, addr, &sin6, sizeof(sin6));
+        ret_val = (socklen_t)sizeof(sin6);
         goto done;
     }
-
-    p101_error_reset(err);
-
-    if(is_dotted_numeric_text(env, address))
+    if(p101_error_has_error(err))
     {
-        addr->ss_family = AF_UNSPEC;
-        goto done;
+        if(p101_error_is_errno(err, EINVAL))
+        {
+            p101_error_reset(err);
+        }
+        else
+        {
+            goto done;
+        }
     }
 
-    // Not an IPv4 or IPv6 literal: a string short enough to fit in sun_path is
-    // taken to be a Unix domain socket path.
-    if(p101_strlen(env, address) <= sizeof(sun.sun_path) - 1)
+    if(!is_dotted_numeric_text(env, address) && is_unix_path(env, address))
     {
-        p101_memset(env, &sun, 0, sizeof(sun));
-        p101_strncpy(env, sun.sun_path, address, sizeof(sun.sun_path) - 1);
-        sun.sun_family = AF_UNIX;
-        p101_memcpy(env, addr, &sun, sizeof(struct sockaddr_un));
-        addr->ss_family = AF_UNIX;
-        goto done;
+        path_length = p101_strlen(env, address);
+        if(path_length <= sizeof(sun.sun_path) - 1U)
+        {
+            p101_memset(env, &sun, 0, sizeof(sun));
+            p101_strncpy(env, sun.sun_path, address, sizeof(sun.sun_path) - 1U);
+            sun.sun_family = AF_UNIX;
+            ret_val        = (socklen_t)(offsetof(struct sockaddr_un, sun_path) + path_length + 1U);
+#if defined(__APPLE__) || defined(__FreeBSD__)
+            sun.sun_len = (uint8_t)ret_val;
+#endif
+            p101_memcpy(env, addr, &sun, sizeof(sun));
+            goto done;
+        }
     }
 
-    // Not an address of any family we understand, and too long to be a path.
-    addr->ss_family = AF_UNSPEC;
+    P101_ERROR_RAISE_USER(err, "The address is not an IPv4/IPv6 literal or an explicit Unix pathname.", P101_CONVERT_ERROR_ADDRESS);
 
 done:
-    return;
+    P101_TRACE_EXIT(env);
+    return ret_val;
 }

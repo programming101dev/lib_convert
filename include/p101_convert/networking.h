@@ -18,11 +18,27 @@
  */
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <p101_env/env.h>
 #include <p101_error/error.h>
 #include <sys/socket.h>
 
-in_port_t parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str);
-void      convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+    in_port_t p101_parse_in_port_t(const struct p101_env *env, struct p101_error *err, const char *str);
+
+    /*
+     * Convert an IPv4/IPv6 literal or an explicit Unix pathname into storage.
+     * Unix paths must contain '/'; use "./name" for a socket in the current
+     * directory. Returns the populated sockaddr length, or zero on error.
+     */
+    socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *err, const char *address, struct sockaddr_storage *addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

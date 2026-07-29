@@ -16,7 +16,7 @@
 # installed locations, so those must be installed first (../../setup.sh, or
 # ./install.sh in each of those repos).
 cmake_minimum_required(VERSION 3.14)
-project(p101_convert_tests C)
+project(p101_convert_tests C CXX)
 enable_testing()
 
 add_library(unity STATIC unity/unity.c)
@@ -74,3 +74,4 @@ endfunction()
 
 p101_add_test(test_integer test_integer.c)
 p101_add_test(test_networking test_networking.c)
+p101_add_test(test_cpp_linkage test_cpp_linkage.cpp)

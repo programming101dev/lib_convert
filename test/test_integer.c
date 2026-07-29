@@ -14,8 +14,9 @@
  *
  * Note the module's convention, which the tests pin down deliberately:
  *   - unparsable input  -> raises AND returns the caller's default_value
- *   - out-of-range input-> raises AND returns the CLAMPED bound (not the default)
+ *   - out-of-range input-> raises AND returns the caller's default_value
  */
+#include "p101_convert/errors.h"
 #include "p101_convert/integer.h"
 #include "unity.h"
 #include <limits.h>
@@ -125,17 +126,18 @@ static void test_parse_int_rejects_trailing_garbage(void)
 
 /* ------------------------------------------------------------ out of range   */
 
-static void test_parse_int_clamps_above_max(void)
+static void test_parse_int_rejects_above_max(void)
 {
-    /* Wider than int, but still inside intmax_t: caught by the range check. */
-    TEST_ASSERT_EQUAL_INT(INT_MAX, p101_parse_int(env, error, "2147483648", 0));
+    TEST_ASSERT_EQUAL_INT(0, p101_parse_int(env, error, "2147483648", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
+    TEST_ASSERT_TRUE(p101_error_is_error(error, P101_ERROR_USER, P101_CONVERT_ERROR_RANGE));
 }
 
-static void test_parse_int_clamps_below_min(void)
+static void test_parse_int_rejects_below_min(void)
 {
-    TEST_ASSERT_EQUAL_INT(INT_MIN, p101_parse_int(env, error, "-2147483649", 0));
+    TEST_ASSERT_EQUAL_INT(0, p101_parse_int(env, error, "-2147483649", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
+    TEST_ASSERT_TRUE(p101_error_is_error(error, P101_ERROR_USER, P101_CONVERT_ERROR_RANGE));
 }
 
 static void test_parse_int_rejects_intmax_overflow(void)
@@ -151,10 +153,10 @@ static void test_parse_int8_and_int16_ranges(void)
     TEST_ASSERT_EQUAL_INT8(INT8_MAX, p101_parse_int8_t(env, error, "127", 0));
     TEST_ASSERT_FALSE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT8(INT8_MAX, p101_parse_int8_t(env, error, "128", 0));
+    TEST_ASSERT_EQUAL_INT8(0, p101_parse_int8_t(env, error, "128", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT16(INT16_MIN, p101_parse_int16_t(env, error, "-32769", 0));
+    TEST_ASSERT_EQUAL_INT16(0, p101_parse_int16_t(env, error, "-32769", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
@@ -166,10 +168,10 @@ static void test_parse_negative_int_requires_a_negative(void)
     TEST_ASSERT_FALSE(p101_error_has_error(error));
     reset();
     /* Zero is NOT negative: max_value is -1, so 0 trips the upper bound. */
-    TEST_ASSERT_EQUAL_INT(-1, p101_parse_negative_int(env, error, "0", 0));
+    TEST_ASSERT_EQUAL_INT(0, p101_parse_negative_int(env, error, "0", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT(-1, p101_parse_negative_int(env, error, "5", 0));
+    TEST_ASSERT_EQUAL_INT(0, p101_parse_negative_int(env, error, "5", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
@@ -178,10 +180,10 @@ static void test_parse_positive_int_requires_positive(void)
     TEST_ASSERT_EQUAL_INT(5, p101_parse_positive_int(env, error, "5", -1));
     TEST_ASSERT_FALSE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT(1, p101_parse_positive_int(env, error, "0", -1));
+    TEST_ASSERT_EQUAL_INT(-1, p101_parse_positive_int(env, error, "0", -1));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_INT(1, p101_parse_positive_int(env, error, "-5", -1));
+    TEST_ASSERT_EQUAL_INT(-1, p101_parse_positive_int(env, error, "-5", -1));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
@@ -192,7 +194,7 @@ static void test_parse_unsigned_accepts_range(void)
     TEST_ASSERT_EQUAL_UINT16(65535, p101_parse_uint16_t(env, error, "65535", 0));
     TEST_ASSERT_FALSE(p101_error_has_error(error));
     reset();
-    TEST_ASSERT_EQUAL_UINT16(65535, p101_parse_uint16_t(env, error, "65536", 0));
+    TEST_ASSERT_EQUAL_UINT16(0, p101_parse_uint16_t(env, error, "65536", 0));
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
@@ -236,6 +238,77 @@ static void test_parse_unsigned_rejects_garbage(void)
     TEST_ASSERT_TRUE(p101_error_has_error(error));
 }
 
+static void test_null_input_raises_and_returns_default(void)
+{
+    TEST_ASSERT_EQUAL_INT(7, p101_parse_int(env, error, NULL, 7));
+    TEST_ASSERT_TRUE(p101_error_has_error(error));
+    reset();
+    TEST_ASSERT_EQUAL_UINT(9, p101_parse_unsigned_int(env, error, NULL, 9U));
+    TEST_ASSERT_TRUE(p101_error_has_error(error));
+}
+
+static void test_all_public_integer_widths(void)
+{
+    TEST_ASSERT_EQUAL_INT(1, p101_parse_char(env, error, "1", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT(2, p101_parse_short(env, error, "2", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(3, p101_parse_long(env, error, "3", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(4, p101_parse_long_long(env, error, "4", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT(5, p101_parse_unsigned_short(env, error, "5", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT64(6, (uint64_t)p101_parse_unsigned_long(env, error, "6", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT64(7, (uint64_t)p101_parse_unsigned_long_long(env, error, "7", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT32(8, p101_parse_int32_t(env, error, "8", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(9, p101_parse_int64_t(env, error, "9", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT8(10, p101_parse_uint8_t(env, error, "10", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT32(11, p101_parse_uint32_t(env, error, "11", 0));
+    reset();
+    TEST_ASSERT_EQUAL_UINT64(12, p101_parse_uint64_t(env, error, "12", 0));
+    reset();
+
+    TEST_ASSERT_EQUAL_INT(-1, p101_parse_negative_char(env, error, "-1", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT(-2, p101_parse_negative_short(env, error, "-2", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(-3, p101_parse_negative_long(env, error, "-3", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(-4, p101_parse_negative_long_long(env, error, "-4", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT8(-5, p101_parse_negative_int8_t(env, error, "-5", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT16(-6, p101_parse_negative_int16_t(env, error, "-6", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT32(-7, p101_parse_negative_int32_t(env, error, "-7", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(-8, p101_parse_negative_int64_t(env, error, "-8", 0));
+    reset();
+
+    TEST_ASSERT_EQUAL_INT(1, p101_parse_positive_char(env, error, "1", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT(2, p101_parse_positive_short(env, error, "2", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(3, p101_parse_positive_long(env, error, "3", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(4, p101_parse_positive_long_long(env, error, "4", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT8(5, p101_parse_positive_int8_t(env, error, "5", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT16(6, p101_parse_positive_int16_t(env, error, "6", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT32(7, p101_parse_positive_int32_t(env, error, "7", 0));
+    reset();
+    TEST_ASSERT_EQUAL_INT64(8, p101_parse_positive_int64_t(env, error, "8", 0));
+    TEST_ASSERT_FALSE(p101_error_has_error(error));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -248,8 +321,8 @@ int main(void)
     RUN_TEST(test_parse_int_rejects_only_whitespace);
     RUN_TEST(test_parse_int_rejects_non_numeric);
     RUN_TEST(test_parse_int_rejects_trailing_garbage);
-    RUN_TEST(test_parse_int_clamps_above_max);
-    RUN_TEST(test_parse_int_clamps_below_min);
+    RUN_TEST(test_parse_int_rejects_above_max);
+    RUN_TEST(test_parse_int_rejects_below_min);
     RUN_TEST(test_parse_int_rejects_intmax_overflow);
     RUN_TEST(test_parse_int8_and_int16_ranges);
     RUN_TEST(test_parse_negative_int_requires_a_negative);
@@ -258,5 +331,7 @@ int main(void)
     RUN_TEST(test_parse_unsigned_rejects_negative_input);
     RUN_TEST(test_parse_unsigned_rejects_negative_zero_too);
     RUN_TEST(test_parse_unsigned_rejects_garbage);
+    RUN_TEST(test_null_input_raises_and_returns_default);
+    RUN_TEST(test_all_public_integer_widths);
     return UNITY_END();
 }

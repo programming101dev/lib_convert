@@ -18,10 +18,10 @@
  *      leading '-'  (no silent wraparound).
  *   2. A successful parse must land inside the target type's range.
  *   3. A successful signed parse must agree with strtoimax on the same string.
- *   4. convert_address() must pick the SAME address family an independent
+ *   4. p101_convert_address() must pick the SAME address family an independent
  *      inet_pton-based oracle picks -- never a leftover byte, and never a
  *      blanket AF_UNSPEC that would pass a mere "is it a legal family" test.
- *   5. If convert_address() reports AF_INET/AF_INET6, the address it stored must
+ *   5. If p101_convert_address() reports AF_INET/AF_INET6, the address it stored must
  *      round-trip back through inet_ntop/inet_pton to the same bytes.
  */
 #include "p101_convert/integer.h"
@@ -31,6 +31,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <netinet/in.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -231,12 +232,12 @@ static void check_unsigned(const struct p101_env *env, struct p101_error *err, c
     }
 
     p101_error_reset(err);
-    port = parse_in_port_t(env, err, s);
+    port = p101_parse_in_port_t(env, err, s);
 
     if(!p101_error_has_error(err))
     {
-        FUZZ_CHECK(!minus, "parse_in_port_t accepted a negative string", s);
-        FUZZ_CHECK(port <= UINT16_MAX, "parse_in_port_t returned an out-of-range port", s);
+        FUZZ_CHECK(!minus, "p101_parse_in_port_t accepted a negative string", s);
+        FUZZ_CHECK(port <= UINT16_MAX, "p101_parse_in_port_t returned an out-of-range port", s);
     }
 }
 
@@ -248,13 +249,14 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
     struct in_addr          v4;
     struct in6_addr         v6;
     sa_family_t             expected;
+    socklen_t               got_length;
     int                     is_v4;
     int                     is_v6;
 
     /* An INDEPENDENT answer, worked out from the documented rules using the
      * platform's own inet_pton rather than anything in lib_convert. Comparing
      * against this is what makes the check a real oracle: a membership test
-     * ("is the family one of these four?") is satisfied by a convert_address
+     * ("is the family one of these four?") is satisfied by a p101_convert_address
      * that just returns AF_UNSPEC for everything, which is exactly the failure
      * this is here to catch. */
     is_v4 = (inet_pton(AF_INET, s, &v4) == 1);
@@ -272,7 +274,7 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
     {
         expected = AF_INET6;
     }
-    else if(strlen(s) <= sizeof(sun.sun_path) - 1)
+    else if(s[0] != '\0' && strchr(s, '/') != NULL && strlen(s) <= sizeof(sun.sun_path) - 1)
     {
         expected = AF_UNIX;
     }
@@ -281,31 +283,34 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
         expected = AF_UNSPEC;
     }
 
-    /* 0xA5 rather than 0: if convert_address() forgets to write a field, the
+    /* 0xA5 rather than 0: if p101_convert_address() forgets to write a field, the
      * leftover is loud instead of an accidentally-plausible zero. */
     memset(&addr, 0xA5, sizeof(addr));
     p101_error_reset(err);
-    convert_address(env, err, s, &addr);
+    got_length = p101_convert_address(env, err, s, &addr);
 
     /* Invariant 4: the family is what the caller branches on next (socket(),
      * bind()), so it must be the RIGHT one -- not merely a legal-looking one,
      * and never a leftover byte. */
-    FUZZ_CHECK(addr.ss_family == expected, "convert_address chose the wrong address family", s);
+    FUZZ_CHECK(addr.ss_family == expected, "p101_convert_address chose the wrong address family", s);
+    FUZZ_CHECK((expected == AF_UNSPEC) == p101_error_has_error(err), "p101_convert_address error state disagrees with its result", s);
 
     /* Invariant 5: whatever it claims to have parsed must round-trip. */
     if(addr.ss_family == AF_INET)
     {
         const struct sockaddr_in *sin = (const struct sockaddr_in *)(const void *)&addr;
 
-        FUZZ_CHECK(inet_ntop(AF_INET, &sin->sin_addr, text, sizeof(text)) != NULL, "convert_address stored an unprintable IPv4 address", s);
-        FUZZ_CHECK(memcmp(&v4, &sin->sin_addr, sizeof(v4)) == 0, "convert_address stored the wrong IPv4 bytes", s);
+        FUZZ_CHECK(inet_ntop(AF_INET, &sin->sin_addr, text, sizeof(text)) != NULL, "p101_convert_address stored an unprintable IPv4 address", s);
+        FUZZ_CHECK(memcmp(&v4, &sin->sin_addr, sizeof(v4)) == 0, "p101_convert_address stored the wrong IPv4 bytes", s);
+        FUZZ_CHECK(got_length == sizeof(*sin), "p101_convert_address returned the wrong IPv4 length", s);
     }
     else if(addr.ss_family == AF_INET6)
     {
         const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6 *)(const void *)&addr;
 
-        FUZZ_CHECK(inet_ntop(AF_INET6, &sin6->sin6_addr, text, sizeof(text)) != NULL, "convert_address stored an unprintable IPv6 address", s);
-        FUZZ_CHECK(memcmp(&v6, &sin6->sin6_addr, sizeof(v6)) == 0, "convert_address stored the wrong IPv6 bytes", s);
+        FUZZ_CHECK(inet_ntop(AF_INET6, &sin6->sin6_addr, text, sizeof(text)) != NULL, "p101_convert_address stored an unprintable IPv6 address", s);
+        FUZZ_CHECK(memcmp(&v6, &sin6->sin6_addr, sizeof(v6)) == 0, "p101_convert_address stored the wrong IPv6 bytes", s);
+        FUZZ_CHECK(got_length == sizeof(*sin6), "p101_convert_address returned the wrong IPv6 length", s);
     }
     else if(addr.ss_family == AF_UNIX)
     {
@@ -313,8 +318,13 @@ static void check_address(const struct p101_env *env, struct p101_error *err, co
 
         /* The path must be NUL-terminated inside the field -- otherwise every
          * later strlen()/connect() on it reads past the end. */
-        FUZZ_CHECK(memchr(stored->sun_path, '\0', sizeof(stored->sun_path)) != NULL, "convert_address left sun_path unterminated", s);
-        FUZZ_CHECK(strcmp(stored->sun_path, s) == 0, "convert_address stored the wrong sun_path", s);
+        FUZZ_CHECK(memchr(stored->sun_path, '\0', sizeof(stored->sun_path)) != NULL, "p101_convert_address left sun_path unterminated", s);
+        FUZZ_CHECK(strcmp(stored->sun_path, s) == 0, "p101_convert_address stored the wrong sun_path", s);
+        FUZZ_CHECK(got_length == offsetof(struct sockaddr_un, sun_path) + strlen(s) + 1U, "p101_convert_address returned the wrong Unix address length", s);
+    }
+    else
+    {
+        FUZZ_CHECK(got_length == 0U, "p101_convert_address returned a length for an invalid address", s);
     }
 }
 
