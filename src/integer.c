@@ -184,7 +184,7 @@ long p101_parse_long(const struct p101_env *env, struct p101_error *err, const c
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, long, (long)parse_integer(env, err, str, default_value, LONG_MIN, LONG_MAX));
+    RETURN_PARSED(env, long, parse_integer(env, err, str, default_value, LONG_MIN, LONG_MAX));
 }
 
 long long p101_parse_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
@@ -219,7 +219,7 @@ unsigned long p101_parse_unsigned_long(const struct p101_env *env, struct p101_e
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, unsigned long, (unsigned long)parse_unsigned_integer(env, err, str, default_value, ULONG_MAX));
+    RETURN_PARSED(env, unsigned long, parse_unsigned_integer(env, err, str, default_value, ULONG_MAX));
 }
 
 unsigned long long p101_parse_unsigned_long_long(const struct p101_env *env, struct p101_error *err, const char *str, unsigned long long default_value)
@@ -254,7 +254,7 @@ long p101_parse_negative_long(const struct p101_env *env, struct p101_error *err
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, long, (long)parse_integer(env, err, str, default_value, LONG_MIN, -1L));
+    RETURN_PARSED(env, long, parse_integer(env, err, str, default_value, LONG_MIN, -1L));
 }
 
 long long p101_parse_negative_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
@@ -289,7 +289,7 @@ long p101_parse_positive_long(const struct p101_env *env, struct p101_error *err
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, long, (long)parse_integer(env, err, str, default_value, 1, LONG_MAX));
+    RETURN_PARSED(env, long, parse_integer(env, err, str, default_value, 1, LONG_MAX));
 }
 
 long long p101_parse_positive_long_long(const struct p101_env *env, struct p101_error *err, const char *str, long long default_value)
@@ -324,7 +324,7 @@ int64_t p101_parse_int64_t(const struct p101_env *env, struct p101_error *err, c
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, int64_t, (int64_t)parse_integer(env, err, str, default_value, INT64_MIN, INT64_MAX));
+    RETURN_PARSED(env, int64_t, parse_integer(env, err, str, default_value, INT64_MIN, INT64_MAX));
 }
 
 uint8_t p101_parse_uint8_t(const struct p101_env *env, struct p101_error *err, const char *str, uint8_t default_value)
@@ -352,7 +352,7 @@ uint64_t p101_parse_uint64_t(const struct p101_env *env, struct p101_error *err,
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, uint64_t, (uint64_t)parse_unsigned_integer(env, err, str, default_value, UINT64_MAX));
+    RETURN_PARSED(env, uint64_t, parse_unsigned_integer(env, err, str, default_value, UINT64_MAX));
 }
 
 int8_t p101_parse_negative_int8_t(const struct p101_env *env, struct p101_error *err, const char *str, int8_t default_value)
@@ -380,7 +380,7 @@ int64_t p101_parse_negative_int64_t(const struct p101_env *env, struct p101_erro
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, int64_t, (int64_t)parse_integer(env, err, str, default_value, INT64_MIN, -1));
+    RETURN_PARSED(env, int64_t, parse_integer(env, err, str, default_value, INT64_MIN, -1));
 }
 
 int8_t p101_parse_positive_int8_t(const struct p101_env *env, struct p101_error *err, const char *str, int8_t default_value)
@@ -408,7 +408,7 @@ int64_t p101_parse_positive_int64_t(const struct p101_env *env, struct p101_erro
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, int64_t, (int64_t)parse_integer(env, err, str, default_value, 1, INT64_MAX));
+    RETURN_PARSED(env, int64_t, parse_integer(env, err, str, default_value, 1, INT64_MAX));
 }
 
 #undef RETURN_PARSED
