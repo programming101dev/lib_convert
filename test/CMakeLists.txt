@@ -11,13 +11,44 @@
 # working tree you just edited, with no install.sh round-trip, and it is what
 # makes --coverage able to attribute lines back to src/*.c.
 #
-# lib_convert's own dependencies (p101_error, p101_env, p101_c, p101_posix --
+# lib_convert's own dependencies (p101_error, p101_env, p101_c,  --
 # see ../config.cmake p101_convert_LINK_LIBRARIES) ARE linked from their
 # installed locations, so those must be installed first (../../setup.sh, or
 # ./install.sh in each of those repos).
 cmake_minimum_required(VERSION 3.14)
 project(p101_convert_tests C CXX)
 enable_testing()
+
+set(P101_API_MANIFEST "${CMAKE_CURRENT_SOURCE_DIR}/../api-manifest.tsv")
+set(P101_UNIT_TEST_MANIFEST "${CMAKE_CURRENT_SOURCE_DIR}/unit-test-manifest.tsv")
+if(NOT EXISTS "${P101_API_MANIFEST}" OR NOT EXISTS "${P101_UNIT_TEST_MANIFEST}")
+    message(FATAL_ERROR "Public API and unit-test manifests are required")
+endif()
+file(STRINGS "${P101_API_MANIFEST}" P101_API_ROWS REGEX "^p101_")
+file(STRINGS "${P101_UNIT_TEST_MANIFEST}" P101_UNIT_ROWS REGEX "^p101_")
+set(P101_API_FUNCTIONS "")
+set(P101_UNIT_FUNCTIONS "")
+foreach(row IN LISTS P101_API_ROWS)
+    string(REGEX MATCH "^p101_[A-Za-z0-9_]+" function_name "${row}")
+    list(APPEND P101_API_FUNCTIONS "${function_name}")
+endforeach()
+foreach(row IN LISTS P101_UNIT_ROWS)
+    string(REGEX MATCH "^p101_[A-Za-z0-9_]+" function_name "${row}")
+    list(APPEND P101_UNIT_FUNCTIONS "${function_name}")
+endforeach()
+set(P101_UNIT_FUNCTIONS_UNIQUE ${P101_UNIT_FUNCTIONS})
+list(REMOVE_DUPLICATES P101_UNIT_FUNCTIONS_UNIQUE)
+list(LENGTH P101_API_FUNCTIONS P101_API_COUNT)
+list(LENGTH P101_UNIT_FUNCTIONS P101_UNIT_COUNT)
+list(LENGTH P101_UNIT_FUNCTIONS_UNIQUE P101_UNIT_UNIQUE_COUNT)
+if(NOT P101_API_COUNT EQUAL P101_UNIT_COUNT OR NOT P101_UNIT_COUNT EQUAL P101_UNIT_UNIQUE_COUNT)
+    message(FATAL_ERROR "Every public API must have exactly one unit-test row")
+endif()
+foreach(function_name IN LISTS P101_API_FUNCTIONS)
+    if(NOT function_name IN_LIST P101_UNIT_FUNCTIONS_UNIQUE)
+        message(FATAL_ERROR "Missing unit test for ${function_name}")
+    endif()
+endforeach()
 
 add_library(unity STATIC unity/unity.c)
 target_include_directories(unity PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/unity")
@@ -30,7 +61,7 @@ if (P101_TEST_COVERAGE)
 endif ()
 
 # The dependencies from ../config.cmake (p101_convert_LINK_LIBRARIES).
-set(P101_LIBS p101_error p101_env p101_c p101_posix)
+set(P101_LIBS p101_error p101_env p101_tool_event p101_c p101_network)
 set(P101_PUBLIC_INCLUDE_DIRS "" CACHE STRING "Extra p101 include dirs")
 set(P101_PUBLIC_LINK_DIRS "" CACHE STRING "Extra p101 link dirs")
 separate_arguments(P101_PUBLIC_INCLUDE_DIRS_LIST NATIVE_COMMAND "${P101_PUBLIC_INCLUDE_DIRS}")

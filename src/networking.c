@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <p101_c/p101_string.h>
-#include <p101_posix/arpa/p101_inet.h>
+#include <p101_network/network.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
