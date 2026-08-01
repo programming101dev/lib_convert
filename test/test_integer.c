@@ -309,6 +309,15 @@ static void test_all_public_integer_widths(void)
     TEST_ASSERT_FALSE(p101_error_has_error(error));
 }
 
+static void test_negative_char_is_independent_of_plain_char_signedness(void)
+{
+    signed char parsed;
+
+    parsed = p101_parse_negative_char(env, error, "-1", 0);
+    TEST_ASSERT_EQUAL_INT(-1, parsed);
+    TEST_ASSERT_FALSE(p101_error_has_error(error));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -333,5 +342,6 @@ int main(void)
     RUN_TEST(test_parse_unsigned_rejects_garbage);
     RUN_TEST(test_null_input_raises_and_returns_default);
     RUN_TEST(test_all_public_integer_widths);
+    RUN_TEST(test_negative_char_is_independent_of_plain_char_signedness);
     return UNITY_END();
 }

@@ -30,7 +30,8 @@ extern "C"
      * Parse one complete base-10 string. Leading whitespace and a leading '+'
      * are accepted; trailing characters are rejected. Every failure raises an
      * error and returns default_value. "Positive" means greater than zero and
-     * "negative" means less than zero.
+     * "negative" means less than zero. The negative-char function explicitly
+     * uses signed char because plain char is unsigned on some supported targets.
      */
     char               p101_parse_char(const struct p101_env *env, struct p101_error *err, const char *str, char default_value);
     short              p101_parse_short(const struct p101_env *env, struct p101_error *err, const char *str, short default_value);
@@ -42,7 +43,7 @@ extern "C"
     unsigned int       p101_parse_unsigned_int(const struct p101_env *env, struct p101_error *err, const char *str, unsigned int default_value);
     unsigned long      p101_parse_unsigned_long(const struct p101_env *env, struct p101_error *err, const char *str, unsigned long default_value);
     unsigned long long p101_parse_unsigned_long_long(const struct p101_env *env, struct p101_error *err, const char *str, unsigned long long default_value);
-    char               p101_parse_negative_char(const struct p101_env *env, struct p101_error *err, const char *str, char default_value);
+    signed char        p101_parse_negative_char(const struct p101_env *env, struct p101_error *err, const char *str, signed char default_value);
     short              p101_parse_negative_short(const struct p101_env *env, struct p101_error *err, const char *str, short default_value);
     int                p101_parse_negative_int(const struct p101_env *env, struct p101_error *err, const char *str, int default_value);
     long               p101_parse_negative_long(const struct p101_env *env, struct p101_error *err, const char *str, long default_value);

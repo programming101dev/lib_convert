@@ -229,11 +229,11 @@ unsigned long long p101_parse_unsigned_long_long(const struct p101_env *env, str
     RETURN_PARSED(env, unsigned long long, (unsigned long long)parse_unsigned_integer(env, err, str, default_value, ULLONG_MAX));
 }
 
-char p101_parse_negative_char(const struct p101_env *env, struct p101_error *err, const char *str, char default_value)
+signed char p101_parse_negative_char(const struct p101_env *env, struct p101_error *err, const char *str, signed char default_value)
 {
     P101_TRACE(env);
 
-    RETURN_PARSED(env, char, (char)parse_integer(env, err, str, default_value, CHAR_MIN, -1));
+    RETURN_PARSED(env, signed char, (signed char)parse_integer(env, err, str, default_value, SCHAR_MIN, -1));
 }
 
 short p101_parse_negative_short(const struct p101_env *env, struct p101_error *err, const char *str, short default_value)
