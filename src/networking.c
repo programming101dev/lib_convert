@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <p101_c/p101_string.h>
+#include <p101_env/wrapper.h>
 #include <p101_network/network.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -153,8 +154,9 @@ in_port_t p101_parse_in_port_t(const struct p101_env *env, struct p101_error *er
     in_port_t ret_val;
 
     P101_TRACE(env);
+    P101_WRAPPER_FAULT_RETURN(env, err, ret_val, 0);
     ret_val = p101_parse_uint16_t(env, err, str, 0);
-    P101_TRACE_EXIT(env);
+    P101_WRAPPER_DONE(env);
     return ret_val;
 }
 
@@ -168,6 +170,7 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
     int                 parse_result;
 
     P101_TRACE(env);
+    P101_WRAPPER_FAULT_RETURN(env, err, ret_val, 0);
     ret_val = 0;
 
     if(addr == NULL)
@@ -259,6 +262,6 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
     P101_ERROR_RAISE_USER(err, "The address is not an IPv4/IPv6 literal or an explicit Unix pathname.", P101_CONVERT_ERROR_ADDRESS);
 
 done:
-    P101_TRACE_EXIT(env);
+    P101_WRAPPER_DONE(env);
     return ret_val;
 }

@@ -105,4 +105,5 @@ endfunction()
 
 p101_add_test(test_integer test_integer.c)
 p101_add_test(test_networking test_networking.c)
+p101_add_test(test_fault_wrappers test_fault_wrappers.c)
 p101_add_test(test_cpp_linkage test_cpp_linkage.cpp)
