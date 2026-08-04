@@ -30,7 +30,6 @@ static uintmax_t parse_unsigned_integer(const struct p101_env *env, struct p101_
     do                                                                                                                                                                                                                                                             \
     {                                                                                                                                                                                                                                                              \
         return_type parsed_result;                                                                                                                                                                                                                                 \
-        parsed_result = default_value;                                                                                                                                                                                                                             \
         P101_WRAPPER_FAULT_RETURN((env_arg), err, parsed_result, default_value);                                                                                                                                                                                   \
         parsed_result = (expression);                                                                                                                                                                                                                              \
         P101_WRAPPER_DONE(env_arg);                                                                                                                                                                                                                                \
@@ -415,4 +414,4 @@ int64_t p101_parse_positive_int64_t(const struct p101_env *env, struct p101_erro
     P101_FAULT_RETURN_PARSED(env, int64_t, parse_integer(env, err, str, default_value, 1, INT64_MAX));
 }
 
-#undef RETURN_PARSED
+#undef P101_FAULT_RETURN_PARSED
