@@ -137,13 +137,14 @@ done:
 
 static bool is_unix_path(const struct p101_env *env, const char *address)
 {
-    const char *slash;
-    bool        ret_val;
+    bool ret_val;
 
     P101_TRACE(env);
     ret_val = false;
     if(address != NULL && address[0] != '\0')
     {
+        const char *slash;
+
         slash = p101_strchr(env, address, '/');
         if(slash != NULL)
         {
