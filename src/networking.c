@@ -148,9 +148,8 @@ static bool is_unix_path(const struct p101_env *env, const char *address)
     ret_val = false;
     if(address != NULL && address[0] != '\0')
     {
-        const char *slash;
+        const char *slash = p101_strchr(env, address, '/');
 
-        slash = p101_strchr(env, address, '/');
         if(slash != NULL)
         {
             ret_val = true;
