@@ -137,13 +137,18 @@ done:
 
 static bool is_unix_path(const struct p101_env *env, const char *address)
 {
-    bool ret_val;
+    const char *slash;
+    bool        ret_val;
 
     P101_TRACE(env);
     ret_val = false;
-    if(address != NULL && address[0] != '\0' && p101_strchr(env, address, '/') != NULL)
+    if(address != NULL && address[0] != '\0')
     {
-        ret_val = true;
+        slash = p101_strchr(env, address, '/');
+        if(slash != NULL)
+        {
+            ret_val = true;
+        }
     }
     P101_TRACE_EXIT(env);
     return ret_val;
@@ -167,6 +172,11 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
     struct sockaddr_in6 sin6;
     size_t              path_length;
     socklen_t           ret_val;
+    bool                has_error;
+    bool                is_dotted;
+    bool                is_invalid_argument;
+    bool                is_ipv4;
+    bool                unix_path;
     int                 parse_result;
 
     P101_TRACE(env);
@@ -186,13 +196,15 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
         P101_ERROR_RAISE_CHECK(err);
         goto done;
     }
-    if(p101_error_has_error(err))
+    has_error = p101_error_has_error(err);
+    if(has_error)
     {
         goto done;
     }
 
     p101_memset(env, &sin, 0, sizeof(sin));
-    if(is_strict_ipv4_literal(env, address))
+    is_ipv4 = is_strict_ipv4_literal(env, address);
+    if(is_ipv4)
     {
         parse_result = p101_inet_pton(env, err, AF_INET, address, &sin.sin_addr);
         if(parse_result == 1)
@@ -205,9 +217,11 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
             ret_val = (socklen_t)sizeof(sin);
             goto done;
         }
-        if(p101_error_has_error(err))
+        has_error = p101_error_has_error(err);
+        if(has_error)
         {
-            if(p101_error_is_errno(err, EINVAL))
+            is_invalid_argument = p101_error_is_errno(err, EINVAL);
+            if(is_invalid_argument)
             {
                 p101_error_reset(err);
             }
@@ -230,9 +244,11 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
         ret_val = (socklen_t)sizeof(sin6);
         goto done;
     }
-    if(p101_error_has_error(err))
+    has_error = p101_error_has_error(err);
+    if(has_error)
     {
-        if(p101_error_is_errno(err, EINVAL))
+        is_invalid_argument = p101_error_is_errno(err, EINVAL);
+        if(is_invalid_argument)
         {
             p101_error_reset(err);
         }
@@ -242,7 +258,13 @@ socklen_t p101_convert_address(const struct p101_env *env, struct p101_error *er
         }
     }
 
-    if(!is_dotted_numeric_text(env, address) && is_unix_path(env, address))
+    is_dotted = is_dotted_numeric_text(env, address);
+    unix_path = false;
+    if(!is_dotted)
+    {
+        unix_path = is_unix_path(env, address);
+    }
+    if(!is_dotted && unix_path)
     {
         path_length = p101_strlen(env, address);
         if(path_length <= sizeof(sun.sun_path) - 1U)

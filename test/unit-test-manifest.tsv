@@ -1,39 +1,39 @@
-function	test_kind	test_source
-p101_convert_address	fault	test/test_fault_wrappers.c
-p101_parse_char	fault	test/test_fault_wrappers.c
-p101_parse_in_port_t	fault	test/test_fault_wrappers.c
-p101_parse_int	fault	test/test_fault_wrappers.c
-p101_parse_int16_t	fault	test/test_fault_wrappers.c
-p101_parse_int32_t	fault	test/test_fault_wrappers.c
-p101_parse_int64_t	fault	test/test_fault_wrappers.c
-p101_parse_int8_t	fault	test/test_fault_wrappers.c
-p101_parse_long	fault	test/test_fault_wrappers.c
-p101_parse_long_long	fault	test/test_fault_wrappers.c
-p101_parse_negative_char	fault	test/test_fault_wrappers.c
-p101_parse_negative_int	fault	test/test_fault_wrappers.c
-p101_parse_negative_int16_t	fault	test/test_fault_wrappers.c
-p101_parse_negative_int32_t	fault	test/test_fault_wrappers.c
-p101_parse_negative_int64_t	fault	test/test_fault_wrappers.c
-p101_parse_negative_int8_t	fault	test/test_fault_wrappers.c
-p101_parse_negative_long	fault	test/test_fault_wrappers.c
-p101_parse_negative_long_long	fault	test/test_fault_wrappers.c
-p101_parse_negative_short	fault	test/test_fault_wrappers.c
-p101_parse_positive_char	fault	test/test_fault_wrappers.c
-p101_parse_positive_int	fault	test/test_fault_wrappers.c
-p101_parse_positive_int16_t	fault	test/test_fault_wrappers.c
-p101_parse_positive_int32_t	fault	test/test_fault_wrappers.c
-p101_parse_positive_int64_t	fault	test/test_fault_wrappers.c
-p101_parse_positive_int8_t	fault	test/test_fault_wrappers.c
-p101_parse_positive_long	fault	test/test_fault_wrappers.c
-p101_parse_positive_long_long	fault	test/test_fault_wrappers.c
-p101_parse_positive_short	fault	test/test_fault_wrappers.c
-p101_parse_short	fault	test/test_fault_wrappers.c
-p101_parse_uint16_t	fault	test/test_fault_wrappers.c
-p101_parse_uint32_t	fault	test/test_fault_wrappers.c
-p101_parse_uint64_t	fault	test/test_fault_wrappers.c
-p101_parse_uint8_t	fault	test/test_fault_wrappers.c
-p101_parse_unsigned_char	fault	test/test_fault_wrappers.c
-p101_parse_unsigned_int	fault	test/test_fault_wrappers.c
-p101_parse_unsigned_long	fault	test/test_fault_wrappers.c
-p101_parse_unsigned_long_long	fault	test/test_fault_wrappers.c
-p101_parse_unsigned_short	fault	test/test_fault_wrappers.c
+function	function_usr	test_kind	test_source
+p101_convert_address	c:@F@p101_convert_address	fault	test/test_fault_wrappers.c
+p101_parse_char	c:@F@p101_parse_char	fault	test/test_fault_wrappers.c
+p101_parse_in_port_t	c:@F@p101_parse_in_port_t	fault	test/test_fault_wrappers.c
+p101_parse_int	c:@F@p101_parse_int	fault	test/test_fault_wrappers.c
+p101_parse_int16_t	c:@F@p101_parse_int16_t	fault	test/test_fault_wrappers.c
+p101_parse_int32_t	c:@F@p101_parse_int32_t	fault	test/test_fault_wrappers.c
+p101_parse_int64_t	c:@F@p101_parse_int64_t	fault	test/test_fault_wrappers.c
+p101_parse_int8_t	c:@F@p101_parse_int8_t	fault	test/test_fault_wrappers.c
+p101_parse_long	c:@F@p101_parse_long	fault	test/test_fault_wrappers.c
+p101_parse_long_long	c:@F@p101_parse_long_long	fault	test/test_fault_wrappers.c
+p101_parse_negative_char	c:@F@p101_parse_negative_char	fault	test/test_fault_wrappers.c
+p101_parse_negative_int	c:@F@p101_parse_negative_int	fault	test/test_fault_wrappers.c
+p101_parse_negative_int16_t	c:@F@p101_parse_negative_int16_t	fault	test/test_fault_wrappers.c
+p101_parse_negative_int32_t	c:@F@p101_parse_negative_int32_t	fault	test/test_fault_wrappers.c
+p101_parse_negative_int64_t	c:@F@p101_parse_negative_int64_t	fault	test/test_fault_wrappers.c
+p101_parse_negative_int8_t	c:@F@p101_parse_negative_int8_t	fault	test/test_fault_wrappers.c
+p101_parse_negative_long	c:@F@p101_parse_negative_long	fault	test/test_fault_wrappers.c
+p101_parse_negative_long_long	c:@F@p101_parse_negative_long_long	fault	test/test_fault_wrappers.c
+p101_parse_negative_short	c:@F@p101_parse_negative_short	fault	test/test_fault_wrappers.c
+p101_parse_positive_char	c:@F@p101_parse_positive_char	fault	test/test_fault_wrappers.c
+p101_parse_positive_int	c:@F@p101_parse_positive_int	fault	test/test_fault_wrappers.c
+p101_parse_positive_int16_t	c:@F@p101_parse_positive_int16_t	fault	test/test_fault_wrappers.c
+p101_parse_positive_int32_t	c:@F@p101_parse_positive_int32_t	fault	test/test_fault_wrappers.c
+p101_parse_positive_int64_t	c:@F@p101_parse_positive_int64_t	fault	test/test_fault_wrappers.c
+p101_parse_positive_int8_t	c:@F@p101_parse_positive_int8_t	fault	test/test_fault_wrappers.c
+p101_parse_positive_long	c:@F@p101_parse_positive_long	fault	test/test_fault_wrappers.c
+p101_parse_positive_long_long	c:@F@p101_parse_positive_long_long	fault	test/test_fault_wrappers.c
+p101_parse_positive_short	c:@F@p101_parse_positive_short	fault	test/test_fault_wrappers.c
+p101_parse_short	c:@F@p101_parse_short	fault	test/test_fault_wrappers.c
+p101_parse_uint16_t	c:@F@p101_parse_uint16_t	fault	test/test_fault_wrappers.c
+p101_parse_uint32_t	c:@F@p101_parse_uint32_t	fault	test/test_fault_wrappers.c
+p101_parse_uint64_t	c:@F@p101_parse_uint64_t	fault	test/test_fault_wrappers.c
+p101_parse_uint8_t	c:@F@p101_parse_uint8_t	fault	test/test_fault_wrappers.c
+p101_parse_unsigned_char	c:@F@p101_parse_unsigned_char	fault	test/test_fault_wrappers.c
+p101_parse_unsigned_int	c:@F@p101_parse_unsigned_int	fault	test/test_fault_wrappers.c
+p101_parse_unsigned_long	c:@F@p101_parse_unsigned_long	fault	test/test_fault_wrappers.c
+p101_parse_unsigned_long_long	c:@F@p101_parse_unsigned_long_long	fault	test/test_fault_wrappers.c
+p101_parse_unsigned_short	c:@F@p101_parse_unsigned_short	fault	test/test_fault_wrappers.c
