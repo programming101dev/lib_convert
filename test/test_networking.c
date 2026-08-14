@@ -19,9 +19,9 @@
  * is the right family but the wrong bytes is still wrong.
  */
 #include "p101_convert/errors.h"
-#include <p101_convert/networking.h>
 #include "unity.h"
 #include <netinet/in.h>
+#include <p101_convert/networking.h>
 #include <stddef.h>
 #include <string.h>
 #include <sys/un.h>
