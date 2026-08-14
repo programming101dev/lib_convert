@@ -24,8 +24,8 @@
  *   5. If p101_convert_address() reports AF_INET/AF_INET6, the address it stored must
  *      round-trip back through inet_ntop/inet_pton to the same bytes.
  */
-#include "p101_convert/integer.h"
-#include "p101_convert/networking.h"
+#include <p101_convert/integer.h>
+#include <p101_convert/networking.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <inttypes.h>

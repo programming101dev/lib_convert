@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "p101_convert/integer.h"
 #include "p101_convert/errors.h"
 #include <errno.h>
 #include <limits.h>
 #include <p101_c/p101_ctype.h>
 #include <p101_c/p101_inttypes.h>
+#include <p101_convert/integer.h>
 #include <p101_env/wrapper.h>
 
 static intmax_t  parse_integer(const struct p101_env *env, struct p101_error *err, const char *str, intmax_t default_value, intmax_t min_value, intmax_t max_value);

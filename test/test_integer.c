@@ -17,7 +17,7 @@
  *   - out-of-range input-> raises AND returns the caller's default_value
  */
 #include "p101_convert/errors.h"
-#include "p101_convert/integer.h"
+#include <p101_convert/integer.h>
 #include "unity.h"
 #include <limits.h>
 #include <stdint.h>

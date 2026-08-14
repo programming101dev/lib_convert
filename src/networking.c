@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "p101_convert/networking.h"
 #include "p101_convert/errors.h"
-#include "p101_convert/integer.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <p101_c/p101_string.h>
+#include <p101_convert/integer.h>
+#include <p101_convert/networking.h>
 #include <p101_env/wrapper.h>
 #include <p101_network/arpa/p101_inet.h>
 #include <p101_network/net/p101_ethernet.h>
