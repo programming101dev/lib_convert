@@ -60,7 +60,7 @@ if (P101_TEST_COVERAGE)
 endif ()
 
 # The dependencies from ../config.cmake (p101_convert_LINK_LIBRARIES).
-set(P101_LIBS p101_error p101_env p101_tool_event p101_c p101_network)
+set(P101_LIBS p101_error p101_env p101_c p101_network)
 set(P101_PUBLIC_INCLUDE_DIRS "" CACHE STRING "Extra p101 include dirs")
 set(P101_PUBLIC_LINK_DIRS "" CACHE STRING "Extra p101 link dirs")
 separate_arguments(P101_PUBLIC_INCLUDE_DIRS_LIST NATIVE_COMMAND "${P101_PUBLIC_INCLUDE_DIRS}")
