@@ -3,18 +3,17 @@
 # Deliberately SEPARATE from the library's own CMakeLists.txt so that vendored
 # Unity and the test code are NOT put through the project's strict
 # clang-format / clang-tidy / cppcheck / Clang-Static-Analyzer / -Werror
-# pipeline. Run it with ../test.sh, which configures this tree with the SAME
-# compiler the main build is currently using.
+# pipeline. The repository's level-2 CMake build configures this tree with the
+# same compiler as the main build.
 #
 # The code under test is compiled straight from ../src, NOT linked from an
 # installed libp101_convert.  That matters: it means ./test.sh exercises the
 # working tree you just edited, with no install.sh round-trip, and it is what
-# makes --coverage able to attribute lines back to src/*.c.
+# makes coverage builds able to attribute lines back to src/*.c.
 #
 # lib_convert's own dependencies (p101_error, p101_env, p101_c,  --
 # see ../config.cmake p101_convert_LINK_LIBRARIES) ARE linked from their
-# installed locations, so those must be installed first (../../setup.sh, or
-# ./install.sh in each of those repos).
+# exact workspace build lane selected by the top-level CMake configuration.
 cmake_minimum_required(VERSION 3.14)
 project(p101_convert_tests C CXX)
 enable_testing()
